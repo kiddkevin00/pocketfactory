@@ -18,7 +18,7 @@ export function Toolbar() {
   }
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View style={[styles.wrap, { pointerEvents: "box-none" }]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -112,10 +112,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.1)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: "0px 2px 6px rgba(0,0,0,0.4)",
   },
   active: { borderColor: "#fde68a", borderWidth: 2 },
   locked: { opacity: 0.7 },

@@ -17,7 +17,7 @@ export function HUD() {
   const items = Object.entries(totals).filter(([, n]) => (n ?? 0) > 0) as [ItemId, number][];
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View style={[styles.wrap, { pointerEvents: "box-none" }]}>
       <View style={styles.row}>
         <View style={styles.powerBox}>
           <Text style={styles.label}>POWER</Text>

@@ -1,10 +1,11 @@
 import "react-native-gesture-handler";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View, useWindowDimensions, AppState } from "react-native";
+import { StyleSheet, View, AppState, LayoutChangeEvent } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { startGameLoop, stopGameLoop, loadIfPresent, useGameStore } from "./src/store/useGameStore";
-import { saveGame } from "./src/game/save";
+import { saveGame, saveMeta } from "./src/game/save";
 import { GameCanvas } from "./src/ui/GameCanvas";
 import { HUD } from "./src/ui/HUD";
 import { Toolbar } from "./src/ui/Toolbar";
@@ -14,7 +15,7 @@ import { Tutorial } from "./src/ui/Tutorial";
 import { AchievementsModal, AchievementToast } from "./src/ui/AchievementsModal";
 
 export default function App() {
-  const { width, height } = useWindowDimensions();
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -24,8 +25,9 @@ export default function App() {
     })();
     const sub = AppState.addEventListener("change", (s) => {
       if (s === "background" || s === "inactive") {
-        const st = useGameStore.getState().state;
-        saveGame(st);
+        const st = useGameStore.getState();
+        saveGame(st.state);
+        saveMeta({ tutorialDismissed: st.tutorialDismissed, unlockedAchievements: st.unlockedAchievements });
       }
     });
     return () => {
@@ -35,24 +37,33 @@ export default function App() {
     };
   }, []);
 
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    if (!size || size.w !== width || size.h !== height) setSize({ w: width, h: height });
+  };
+
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <StatusBar style="light" />
-      <View style={styles.fill}>
-        <GameCanvas width={width} height={height} />
-        <HUD />
-        <Tutorial />
-        <BuildingSheet />
-        <Toolbar />
-        <ResearchModal />
-        <AchievementsModal />
-        <AchievementToast />
-      </View>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={styles.root}>
+        <StatusBar style="light" />
+        <SafeAreaView style={styles.fill} edges={["top", "bottom", "left", "right"]}>
+          <View style={styles.fill} onLayout={onLayout}>
+            {size && <GameCanvas width={size.w} height={size.h} />}
+            <HUD />
+            <Tutorial />
+            <BuildingSheet />
+            <Toolbar />
+            <ResearchModal />
+            <AchievementsModal />
+            <AchievementToast />
+          </View>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#06080f" },
-  fill: { flex: 1 },
+  fill: { flex: 1, backgroundColor: "#06080f" },
 });

@@ -3,6 +3,7 @@ import { GameState } from "./types";
 
 const KEY = "pocketfactory:save:v1";
 const META_KEY = "pocketfactory:meta:v1";
+const SAVE_VERSION = 1;
 
 export type SaveMeta = { tutorialDismissed: boolean; unlockedAchievements?: string[] };
 
@@ -18,7 +19,14 @@ export async function loadGame(): Promise<GameState | null> {
   try {
     const raw = await AsyncStorage.getItem(KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as GameState;
+    const parsed = JSON.parse(raw) as GameState;
+    // Save schema mismatch: drop it rather than crash with a half-shape.
+    if (!parsed || parsed.version !== SAVE_VERSION) return null;
+    // Defensive defaults for fields that might be missing from older snapshots.
+    if (!parsed.power || typeof parsed.power.baseline !== "number") {
+      parsed.power = { generated: 50, drawn: 0, baseline: 50 };
+    }
+    return parsed;
   } catch (e) {
     console.warn("load failed", e);
     return null;

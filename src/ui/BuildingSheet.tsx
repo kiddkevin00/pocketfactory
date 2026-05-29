@@ -109,13 +109,16 @@ function BufferRow({ label, buf }: { label: string; buf: Partial<Record<ItemId, 
   );
 }
 
-function formatRecipe(r: { inputs: any; outputs: any }): string {
-  const ins = Object.entries(r.inputs)
-    .map(([k, n]) => `${n}× ${ITEM_LABEL[k as ItemId] ?? k}`)
-    .join(" + ");
-  const outs = Object.entries(r.outputs)
-    .map(([k, n]) => `${n}× ${ITEM_LABEL[k as ItemId] ?? k}`)
-    .join(" + ");
+function formatRecipe(r: {
+  inputs: Partial<Record<ItemId, number>>;
+  outputs: Partial<Record<ItemId, number>>;
+}): string {
+  const fmt = (obj: Partial<Record<ItemId, number>>) =>
+    Object.entries(obj)
+      .map(([k, n]) => `${n}× ${ITEM_LABEL[k as ItemId] ?? k}`)
+      .join(" + ");
+  const ins = fmt(r.inputs);
+  const outs = fmt(r.outputs);
   return ins ? `${ins} → ${outs}` : outs;
 }
 
@@ -131,10 +134,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(253,230,138,0.25)",
     gap: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
+    boxShadow: "0px 6px 12px rgba(0,0,0,0.5)",
   },
   header: { flexDirection: "row", alignItems: "center", gap: 10 },
   colorChip: { width: 14, height: 14, borderRadius: 4 },

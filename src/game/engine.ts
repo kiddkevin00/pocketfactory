@@ -13,10 +13,23 @@ import { BUILDINGS, COAL_GEN_FUEL_MS } from "./buildings";
 const BUFFER_CAP = 8;
 const BELT_TRAVEL_MS = 4000; // ms to cross one belt path end-to-end at base speed
 const FAST_MULT = 2;
+const BELT_CAP = 8;
 
 let idCounter = 1;
 export function newId(prefix: string): string {
   return `${prefix}_${idCounter++}_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+// Re-seed the id counter so freshly-minted IDs can't collide with ones already in the loaded save.
+export function reseedIds(state: GameState): void {
+  let max = 0;
+  const scan = (id: string) => {
+    const m = id.match(/_(\d+)_/);
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  };
+  Object.keys(state.buildings).forEach(scan);
+  Object.keys(state.belts).forEach(scan);
+  idCounter = max + 1;
 }
 
 export function newGame(): GameState {
@@ -120,11 +133,11 @@ export function connect(
   if (from.id === to.id) return null;
   if (BUILDINGS[from.kind].outputs === 0) return null;
   if (BUILDINGS[to.kind].inputs === 0) return null;
-  // already a belt from→to?
+  // Already a belt from→to? Treat as no-op (caller can detect via reference equality).
   const existing = Object.values(state.belts).find(
     (b) => b.fromBuildingId === fromId && b.toBuildingId === toId,
   );
-  if (existing) return existing;
+  if (existing) return null;
   const path = routePath(from.x, from.y, to.x, to.y);
   const belt: Belt = {
     id: newId("belt"),
@@ -256,8 +269,12 @@ export function tick(state: GameState, dt: number): void {
     const from = state.buildings[belt.fromBuildingId];
     const to = state.buildings[belt.toBuildingId];
     if (!from || !to) continue;
-    // try to load: pick any item from from.outputBuf
-    if (belt.items.length === 0 || belt.items[belt.items.length - 1].t > 0.15) {
+    // Try to load: pick any item from from.outputBuf, but only if we have headroom
+    // (belt isn't already saturated and the last loaded item has cleared the head).
+    if (
+      belt.items.length < BELT_CAP &&
+      (belt.items.length === 0 || belt.items[belt.items.length - 1].t > 0.15)
+    ) {
       const available = Object.entries(from.outputBuf).find(([, n]) => (n ?? 0) > 0);
       if (available) {
         const [k] = available;
@@ -284,10 +301,6 @@ export function tick(state: GameState, dt: number): void {
     }
     belt.items = remaining;
   }
-}
-
-export function unlock(state: GameState, id: GameState["research"][number]): void {
-  if (!state.research.includes(id)) state.research.push(id);
 }
 
 export const RESEARCH_COST: Record<string, Partial<Record<ItemId, number>>> = {

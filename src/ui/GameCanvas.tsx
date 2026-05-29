@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { View, StyleSheet, Text, Pressable } from "react-native";
 import Svg, { G, Rect, Circle, Line, Polyline, Path, Text as SvgText } from "react-native-svg";
 import {
@@ -44,16 +44,33 @@ export function GameCanvas({ width, height }: Props) {
   const deleteBelt = useGameStore((s) => s.deleteBelt);
 
   // Start centered on the iron-ore cluster (around tile 6,6).
-  const tx = useSharedValue(width / 2 - 7 * TILE);
-  const ty = useSharedValue(height / 2 - 8 * TILE);
+  const initialTx = width / 2 - 7 * TILE;
+  const initialTy = height / 2 - 8 * TILE;
+  const tx = useSharedValue(initialTx);
+  const ty = useSharedValue(initialTy);
   const scale = useSharedValue(1);
   const startTx = useSharedValue(0);
   const startTy = useSharedValue(0);
   const startScale = useSharedValue(1);
 
+  // Keep at least one tile of world peeking onto the viewport so the user can't lose the map.
+  function clampPan(x: number, y: number, s: number): { x: number; y: number } {
+    "worklet";
+    const worldW = state.worldW * TILE * s;
+    const worldH = state.worldH * TILE * s;
+    const minX = width - worldW - TILE;
+    const maxX = TILE;
+    const minY = height - worldH - TILE;
+    const maxY = TILE;
+    return {
+      x: Math.max(Math.min(x, maxX), minX),
+      y: Math.max(Math.min(y, maxY), minY),
+    };
+  }
+
   function recenter() {
-    tx.value = width / 2 - 7 * TILE;
-    ty.value = height / 2 - 8 * TILE;
+    tx.value = initialTx;
+    ty.value = initialTy;
     scale.value = 1;
   }
 
@@ -73,8 +90,13 @@ export function GameCanvas({ width, height }: Props) {
       startTy.value = ty.value;
     })
     .onUpdate((e) => {
-      tx.value = startTx.value + e.translationX;
-      ty.value = startTy.value + e.translationY;
+      const clamped = clampPan(
+        startTx.value + e.translationX,
+        startTy.value + e.translationY,
+        scale.value,
+      );
+      tx.value = clamped.x;
+      ty.value = clamped.y;
     });
 
   const pinch = Gesture.Pinch()
@@ -88,7 +110,8 @@ export function GameCanvas({ width, height }: Props) {
 
   // Tap to place / select.
   const tap = Gesture.Tap()
-    .maxDuration(250)
+    .maxDuration(400)
+    .maxDistance(8)
     .onEnd((e) => {
       const localX = (e.x - tx.value) / scale.value;
       const localY = (e.y - ty.value) / scale.value;
@@ -172,8 +195,8 @@ export function GameCanvas({ width, height }: Props) {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <GestureDetector gesture={composed}>
-        <View style={[styles.canvas, { width, height }]}>
+      <View style={[styles.canvas, { width, height }]}>
+        <GestureDetector gesture={composed}>
           <Animated.View style={[{ width: worldPx, height: worldPy }, animatedStyle]}>
             <Svg width={worldPx} height={worldPy}>
               <Grid w={state.worldW} h={state.worldH} />
@@ -192,16 +215,16 @@ export function GameCanvas({ width, height }: Props) {
               ))}
             </Svg>
           </Animated.View>
-          {toast && (
-            <View style={styles.toast} pointerEvents="none">
-              <Text style={styles.toastText}>{toast}</Text>
-            </View>
-          )}
-          <Pressable style={styles.recenterBtn} onPress={recenter}>
-            <Text style={styles.recenterText}>⊕</Text>
-          </Pressable>
-        </View>
-      </GestureDetector>
+        </GestureDetector>
+        {toast && (
+          <View style={[styles.toast, { pointerEvents: "none" }]}>
+            <Text style={styles.toastText}>{toast}</Text>
+          </View>
+        )}
+        <Pressable style={styles.recenterBtn} onPress={recenter} hitSlop={8}>
+          <Text style={styles.recenterText}>⊕</Text>
+        </Pressable>
+      </View>
     </GestureHandlerRootView>
   );
 }

@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useGameStore } from "../store/useGameStore";
-import { BUILDINGS } from "../game/buildings";
 
 type Step = {
   id: string;
@@ -56,7 +55,7 @@ export function Tutorial() {
   const idx = STEPS.indexOf(current);
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View style={[styles.wrap, { pointerEvents: "box-none" }]}>
       <View style={styles.card}>
         <View style={styles.headerRow}>
           <Text style={styles.tag}>TUTORIAL · {idx + 1}/{STEPS.length}</Text>
@@ -97,10 +96,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     gap: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: "0px 4px 12px rgba(0,0,0,0.5)",
   },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   tag: { color: "#fde68a", fontWeight: "800", fontSize: 10, letterSpacing: 1.5 },

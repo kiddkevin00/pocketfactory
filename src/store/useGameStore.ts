@@ -10,6 +10,7 @@ import {
   removeBelt,
   doResearch,
   canPlace,
+  reseedIds,
 } from "../game/engine";
 import { saveGame, loadGame, loadMeta, saveMeta } from "../game/save";
 import { ACHIEVEMENTS } from "../game/achievements";
@@ -32,6 +33,7 @@ type Store = {
   tutorialDismissed: boolean;
   unlockedAchievements: string[];
   recentAchievement: { id: string; label: string } | null;
+  achievementQueue: { id: string; label: string }[];
 
   // mutations (mutate via setState w/ shallow clone of state)
   bumpTick: (dt: number) => void;
@@ -68,25 +70,33 @@ export const useGameStore = create<Store>((set, get) => ({
   tutorialDismissed: false,
   unlockedAchievements: [],
   recentAchievement: null,
+  achievementQueue: [],
 
   bumpTick: (dt) =>
     set((s) => {
       const next = cloneState(s.state);
       tick(next, dt);
-      // Check achievements
+      // Check achievements; queue every newly-unlocked one so none are missed.
       const unlocked = [...s.unlockedAchievements];
-      let newlyUnlocked: { id: string; label: string } | null = null;
+      const newlyUnlocked: { id: string; label: string }[] = [];
       for (const a of ACHIEVEMENTS) {
         if (unlocked.includes(a.id)) continue;
         if (a.check(next)) {
           unlocked.push(a.id);
-          if (!newlyUnlocked) newlyUnlocked = { id: a.id, label: a.label };
+          newlyUnlocked.push({ id: a.id, label: a.label });
         }
       }
       const patch: Partial<Store> = { state: next };
-      if (unlocked.length !== s.unlockedAchievements.length) {
+      if (newlyUnlocked.length > 0) {
         patch.unlockedAchievements = unlocked;
-        patch.recentAchievement = newlyUnlocked;
+        // Append to queue; if nothing currently displayed, promote the first.
+        const queue = [...s.achievementQueue, ...newlyUnlocked];
+        if (!s.recentAchievement && queue.length > 0) {
+          patch.recentAchievement = queue[0];
+          patch.achievementQueue = queue.slice(1);
+        } else {
+          patch.achievementQueue = queue;
+        }
       }
       return patch;
     }),
@@ -153,10 +163,21 @@ export const useGameStore = create<Store>((set, get) => ({
   toggleAchievementsPanel: (open) =>
     set((s) => ({ showAchievements: open ?? !s.showAchievements })),
   toggleMenu: (open) => set((s) => ({ showMenu: open ?? !s.showMenu })),
-  clearRecentAchievement: () => set({ recentAchievement: null }),
+  clearRecentAchievement: () =>
+    set((s) => {
+      // Pop the next queued achievement (if any) so toasts stack one-at-a-time.
+      if (s.achievementQueue.length === 0) return { recentAchievement: null };
+      return {
+        recentAchievement: s.achievementQueue[0],
+        achievementQueue: s.achievementQueue.slice(1),
+      };
+    }),
 
-  resetGame: () => set({ state: newGame(), tool: { kind: "none" }, selectedBuildingId: null, tutorialDismissed: false, unlockedAchievements: [], recentAchievement: null }),
-  hydrate: (s) => set({ state: s }),
+  resetGame: () => set({ state: newGame(), tool: { kind: "none" }, selectedBuildingId: null, tutorialDismissed: false, unlockedAchievements: [], recentAchievement: null, achievementQueue: [] }),
+  hydrate: (s) => {
+    reseedIds(s);
+    set({ state: s });
+  },
   dismissTutorial: () => {
     const cur = get();
     set({ tutorialDismissed: true });

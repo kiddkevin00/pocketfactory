@@ -64,7 +64,7 @@ export function AchievementToast() {
 
   if (!recent) return null;
   return (
-    <Animated.View style={[styles.toastWrap, { opacity, transform: [{ translateY }] }]} pointerEvents="none">
+    <Animated.View style={[styles.toastWrap, { opacity, transform: [{ translateY }], pointerEvents: "none" }]}>
       <View style={styles.toast}>
         <Text style={styles.toastMedal}>★</Text>
         <View>
@@ -130,9 +130,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "rgba(253,230,138,0.6)",
-    shadowColor: "#fde68a",
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    boxShadow: "0px 0px 16px rgba(253,230,138,0.3)",
   },
   toastMedal: { color: "#fde68a", fontSize: 24 },
   toastTag: { color: "#fde68a", fontWeight: "800", fontSize: 9, letterSpacing: 1.5 },
