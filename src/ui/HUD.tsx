@@ -10,6 +10,8 @@ export function HUD() {
   const totals = useGameStore((s) => s.state.totalProduced);
   const lastSaveAt = useGameStore((s) => s.lastSaveAt);
   const toggleResearchPanel = useGameStore((s) => s.toggleResearchPanel);
+  const toggleAchievementsPanel = useGameStore((s) => s.toggleAchievementsPanel);
+  const unlockedCount = useGameStore((s) => s.unlockedAchievements.length);
 
   const pct = power.generated > 0 ? Math.min(1, power.drawn / power.generated) : 0;
   const items = Object.entries(totals).filter(([, n]) => (n ?? 0) > 0) as [ItemId, number][];
@@ -34,9 +36,14 @@ export function HUD() {
             {power.drawn} / {power.generated} MW
           </Text>
         </View>
-        <Pressable style={styles.researchBtn} onPress={() => toggleResearchPanel(true)}>
-          <Text style={styles.researchBtnText}>RESEARCH</Text>
-        </Pressable>
+        <View style={styles.btnCol}>
+          <Pressable style={styles.researchBtn} onPress={() => toggleResearchPanel(true)}>
+            <Text style={styles.researchBtnText}>RESEARCH</Text>
+          </Pressable>
+          <Pressable style={styles.achievementsBtn} onPress={() => toggleAchievementsPanel(true)}>
+            <Text style={styles.achievementsBtnText}>★ {unlockedCount}</Text>
+          </Pressable>
+        </View>
       </View>
       {brownout && (
         <View style={styles.brownout}>
@@ -97,15 +104,29 @@ const styles = StyleSheet.create({
   },
   barFill: { height: "100%" },
   powerText: { color: "#f5f6fa", fontSize: 13, fontVariant: ["tabular-nums"] },
+  btnCol: { gap: 6, justifyContent: "space-between" },
   researchBtn: {
     backgroundColor: "#5b3fbf",
     paddingHorizontal: 14,
+    paddingVertical: 10,
     justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
   },
   researchBtnText: { color: "#fff", fontWeight: "700", fontSize: 12, letterSpacing: 1 },
+  achievementsBtn: {
+    backgroundColor: "rgba(253,230,138,0.12)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(253,230,138,0.4)",
+  },
+  achievementsBtnText: { color: "#fde68a", fontWeight: "700", fontSize: 12, letterSpacing: 1 },
   brownout: {
     backgroundColor: "rgba(190,30,30,0.92)",
     padding: 8,

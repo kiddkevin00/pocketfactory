@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PocketFactory — pocket-sized factory simulation</title>
+  <meta name="description" content="A pocket-sized factory sim inspired by Satisfactory. Mine, smelt, belt, assemble, and power your own miniature industry — on your phone." />
+  <meta name="theme-color" content="#06080f" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/icon-512.png" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="PocketFactory" />
+  <meta property="og:description" content="A pocket-sized factory simulation, inspired by Satisfactory." />
+  <meta property="og:image" content="assets/icon-512.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kiddkevin00.github.io/pocketfactory/" />
+  <meta name="twitter:card" content="summary_large_image" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="./">
+        <img src="assets/icon.png" alt="" />
+        <span class="brand-name">PocketFactory</span>
+        <span class="brand-tag">v1.0</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#how">How to play</a>
+        <a class="nav-link" href="support.html">Support</a>
+        <a class="nav-link" href="privacy.html">Privacy</a>
+        <a class="nav-link cta" href="https://github.com/kiddkevin00/pocketfactory">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="wrap hero">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> NOW IN BETA · iOS via Expo Go</span>
+      <h1>Build a tiny factory. <span class="accent">Watch it run.</span></h1>
+      <p class="hero-sub">
+        PocketFactory is a pocket-sized industrial sim inspired by Satisfactory.
+        Mine ore from glowing nodes, smelt it into ingots, belt it through your line,
+        assemble parts, and keep the lights on with your own coal power. All on a phone screen.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/kiddkevin00/pocketfactory">
+          <span>★</span> Star on GitHub
+        </a>
+        <a class="btn btn-ghost" href="#how">How it works →</a>
+      </div>
+      <div class="hero-meta">
+        <span><span class="pip"></span> Offline-first</span>
+        <span><span class="pip" style="background:var(--gold)"></span> No accounts</span>
+        <span><span class="pip" style="background:var(--purple)"></span> Open source</span>
+      </div>
+    </div>
+
+    <div class="device" aria-hidden="true">
+      <div class="device-screen">
+        <img src="assets/screenshot-playing.png" alt="PocketFactory gameplay" />
+      </div>
+    </div>
+  </header>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">FEATURES</span>
+        <h2>A real factory loop, sized for your thumb.</h2>
+        <p>Every piece of Satisfactory's loop is here — just drawn in 2D, balanced for a phone, and shipped with offline save.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature miner">
+          <div class="icon">▲</div>
+          <h3>Mine resources</h3>
+          <p>Place Miners on iron, copper, and coal nodes scattered across the world. Each node has its own extraction rate.</p>
+        </div>
+        <div class="feature smelt">
+          <div class="icon">●</div>
+          <h3>Smelt &amp; craft</h3>
+          <p>Route ore into smelters, ingots into constructors, and parts into assemblers — 7 recipes across 4 building types.</p>
+        </div>
+        <div class="feature belt">
+          <div class="icon">⇢</div>
+          <h3>Conveyor belts</h3>
+          <p>Tap source, tap destination — done. Items animate along the belt and back up when storage fills.</p>
+        </div>
+        <div class="feature power">
+          <div class="icon">⚡</div>
+          <h3>Real power grid</h3>
+          <p>Every building draws MW. Build coal generators to keep up — or watch the whole factory brown out.</p>
+        </div>
+        <div class="feature research">
+          <div class="icon">⚛</div>
+          <h3>Research tree</h3>
+          <p>Spend stockpiled items to unlock copper, assemblers, double-speed belts, and overclocked power.</p>
+        </div>
+        <div class="feature save">
+          <div class="icon">⤓</div>
+          <h3>Offline save</h3>
+          <p>Auto-saves every 10 seconds and when you background the app. Nothing leaves your device.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">GETTING STARTED</span>
+        <h2>Five taps to your first ingot.</h2>
+        <p>The first-launch tutorial walks you through this — but here's the whole loop in one screen.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">01</div>
+          <div>
+            <h3>Place a Miner on a resource node</h3>
+            <p>Tap <b>Miner</b> in the toolbar, then tap any glowing tile labeled Fe (iron), Cu (copper), or C (coal).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <div>
+            <h3>Place a Smelter and pick the recipe</h3>
+            <p>Put a Smelter on an open tile beside your Miner. Tap it to pick a smelting recipe.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <div>
+            <h3>Connect them with a Belt</h3>
+            <p>Tap <b>Belt</b>, tap the source building, then tap the destination. Items will start flowing.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">04</div>
+          <div>
+            <h3>Add a Storage at the end of the line</h3>
+            <p>Storage is what counts toward your stockpile — and research requires stockpile.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">05</div>
+          <div>
+            <h3>Generate power before you brown out</h3>
+            <p>Mine coal, belt it into a Coal Generator, and add 75 MW to your grid.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shots">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">SCREENSHOTS</span>
+        <h2>What it looks like on a phone.</h2>
+      </div>
+      <div class="showcase">
+        <figure class="shot">
+          <img src="assets/screenshot-empty.png" alt="Empty starting state with tutorial" />
+          <figcaption class="label"><span>Day one</span><span class="num">01</span></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshot-playing.png" alt="A factory in progress" />
+          <figcaption class="label"><span>Mid-game</span><span class="num">02</span></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshot-research.png" alt="Research panel" />
+          <figcaption class="label"><span>Research</span><span class="num">03</span></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshot-achievements.png" alt="Achievements panel" />
+          <figcaption class="label"><span>Achievements</span><span class="num">04</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <div>© <span id="yr"></span> Marcus Hsu · Made with care.</div>
+      <div class="foot-links">
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/kiddkevin00/pocketfactory">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>

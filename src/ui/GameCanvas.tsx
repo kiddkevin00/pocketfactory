@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, StyleSheet, Text, Pressable } from "react-native";
-import Svg, { G, Rect, Circle, Line, Polyline, Path } from "react-native-svg";
+import Svg, { G, Rect, Circle, Line, Polyline, Path, Text as SvgText } from "react-native-svg";
 import {
   Gesture,
   GestureDetector,
@@ -19,9 +19,9 @@ import { Belt, Building, ResourceNode } from "../game/types";
 const TILE = 36;
 
 const NODE_COLOR: Record<string, string> = {
-  iron_ore: "#7a7a82",
-  copper_ore: "#a85a30",
-  coal: "#101014",
+  iron_ore: "#94a3b8",
+  copper_ore: "#dc7a3d",
+  coal: "#1e293b",
 };
 
 const NODE_LABEL: Record<string, string> = {
@@ -30,7 +30,9 @@ const NODE_LABEL: Record<string, string> = {
   coal: "C",
 };
 
-export function GameCanvas({ width, height }: { width: number; height: number }) {
+type Props = { width: number; height: number };
+
+export function GameCanvas({ width, height }: Props) {
   const state = useGameStore((s) => s.state);
   const tool = useGameStore((s) => s.tool);
   const selectedId = useGameStore((s) => s.selectedBuildingId);
@@ -41,12 +43,19 @@ export function GameCanvas({ width, height }: { width: number; height: number })
   const setTool = useGameStore((s) => s.setTool);
   const deleteBelt = useGameStore((s) => s.deleteBelt);
 
-  const tx = useSharedValue(0);
-  const ty = useSharedValue(0);
+  // Start centered on the iron-ore cluster (around tile 6,6).
+  const tx = useSharedValue(width / 2 - 7 * TILE);
+  const ty = useSharedValue(height / 2 - 8 * TILE);
   const scale = useSharedValue(1);
   const startTx = useSharedValue(0);
   const startTy = useSharedValue(0);
   const startScale = useSharedValue(1);
+
+  function recenter() {
+    tx.value = width / 2 - 7 * TILE;
+    ty.value = height / 2 - 8 * TILE;
+    scale.value = 1;
+  }
 
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -188,6 +197,9 @@ export function GameCanvas({ width, height }: { width: number; height: number })
               <Text style={styles.toastText}>{toast}</Text>
             </View>
           )}
+          <Pressable style={styles.recenterBtn} onPress={recenter}>
+            <Text style={styles.recenterText}>⊕</Text>
+          </Pressable>
         </View>
       </GestureDetector>
     </GestureHandlerRootView>
@@ -233,10 +245,22 @@ function Grid({ w, h }: { w: number; h: number }) {
 function NodeShape({ n }: { n: ResourceNode }) {
   const cx = n.x * TILE + TILE / 2;
   const cy = n.y * TILE + TILE / 2;
+  const color = NODE_COLOR[n.kind];
   return (
     <G>
-      <Circle cx={cx} cy={cy} r={TILE / 2 - 2} fill={NODE_COLOR[n.kind]} opacity={0.55} />
-      <Circle cx={cx} cy={cy} r={TILE / 2 - 6} fill={NODE_COLOR[n.kind]} opacity={1} />
+      <Circle cx={cx} cy={cy} r={TILE / 2 - 2} fill={color} opacity={0.35} />
+      <Circle cx={cx} cy={cy} r={TILE / 2 - 7} fill={color} opacity={0.95} />
+      <SvgText
+        x={cx}
+        y={cy + 3}
+        fontSize={9}
+        fontWeight="700"
+        fill="#fff"
+        textAnchor="middle"
+        opacity={0.9}
+      >
+        {NODE_LABEL[n.kind]}
+      </SvgText>
     </G>
   );
 }
@@ -389,4 +413,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(253,230,138,0.4)",
   },
+  recenterBtn: {
+    position: "absolute",
+    right: 12,
+    top: 200,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(20,24,36,0.95)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  recenterText: { color: "#fde68a", fontSize: 20, fontWeight: "700" },
 });

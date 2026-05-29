@@ -10,6 +10,8 @@ import { HUD } from "./src/ui/HUD";
 import { Toolbar } from "./src/ui/Toolbar";
 import { BuildingSheet } from "./src/ui/BuildingSheet";
 import { ResearchModal } from "./src/ui/ResearchModal";
+import { Tutorial } from "./src/ui/Tutorial";
+import { AchievementsModal, AchievementToast } from "./src/ui/AchievementsModal";
 
 export default function App() {
   const { width, height } = useWindowDimensions();
@@ -39,9 +41,12 @@ export default function App() {
       <View style={styles.fill}>
         <GameCanvas width={width} height={height} />
         <HUD />
+        <Tutorial />
         <BuildingSheet />
         <Toolbar />
         <ResearchModal />
+        <AchievementsModal />
+        <AchievementToast />
       </View>
     </GestureHandlerRootView>
   );

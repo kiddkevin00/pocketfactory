@@ -11,7 +11,8 @@ import {
   doResearch,
   canPlace,
 } from "../game/engine";
-import { saveGame, loadGame } from "../game/save";
+import { saveGame, loadGame, loadMeta, saveMeta } from "../game/save";
+import { ACHIEVEMENTS } from "../game/achievements";
 
 // Tool selection for the UI: which build action is active.
 export type Tool =
@@ -25,8 +26,12 @@ type Store = {
   tool: Tool;
   selectedBuildingId: string | null;
   showResearch: boolean;
+  showAchievements: boolean;
   showMenu: boolean;
   lastSaveAt: number;
+  tutorialDismissed: boolean;
+  unlockedAchievements: string[];
+  recentAchievement: { id: string; label: string } | null;
 
   // mutations (mutate via setState w/ shallow clone of state)
   bumpTick: (dt: number) => void;
@@ -39,9 +44,12 @@ type Store = {
   deleteBelt: (id: string) => void;
   research: (id: string) => boolean;
   toggleResearchPanel: (open?: boolean) => void;
+  toggleAchievementsPanel: (open?: boolean) => void;
   toggleMenu: (open?: boolean) => void;
+  clearRecentAchievement: () => void;
   resetGame: () => void;
   hydrate: (s: GameState) => void;
+  dismissTutorial: () => void;
 };
 
 function cloneState(s: GameState): GameState {
@@ -54,14 +62,33 @@ export const useGameStore = create<Store>((set, get) => ({
   tool: { kind: "none" },
   selectedBuildingId: null,
   showResearch: false,
+  showAchievements: false,
   showMenu: false,
   lastSaveAt: 0,
+  tutorialDismissed: false,
+  unlockedAchievements: [],
+  recentAchievement: null,
 
   bumpTick: (dt) =>
     set((s) => {
       const next = cloneState(s.state);
       tick(next, dt);
-      return { state: next };
+      // Check achievements
+      const unlocked = [...s.unlockedAchievements];
+      let newlyUnlocked: { id: string; label: string } | null = null;
+      for (const a of ACHIEVEMENTS) {
+        if (unlocked.includes(a.id)) continue;
+        if (a.check(next)) {
+          unlocked.push(a.id);
+          if (!newlyUnlocked) newlyUnlocked = { id: a.id, label: a.label };
+        }
+      }
+      const patch: Partial<Store> = { state: next };
+      if (unlocked.length !== s.unlockedAchievements.length) {
+        patch.unlockedAchievements = unlocked;
+        patch.recentAchievement = newlyUnlocked;
+      }
+      return patch;
     }),
 
   setTool: (t) => set({ tool: t, selectedBuildingId: null }),
@@ -123,10 +150,18 @@ export const useGameStore = create<Store>((set, get) => ({
 
   toggleResearchPanel: (open) =>
     set((s) => ({ showResearch: open ?? !s.showResearch })),
+  toggleAchievementsPanel: (open) =>
+    set((s) => ({ showAchievements: open ?? !s.showAchievements })),
   toggleMenu: (open) => set((s) => ({ showMenu: open ?? !s.showMenu })),
+  clearRecentAchievement: () => set({ recentAchievement: null }),
 
-  resetGame: () => set({ state: newGame(), tool: { kind: "none" }, selectedBuildingId: null }),
+  resetGame: () => set({ state: newGame(), tool: { kind: "none" }, selectedBuildingId: null, tutorialDismissed: false, unlockedAchievements: [], recentAchievement: null }),
   hydrate: (s) => set({ state: s }),
+  dismissTutorial: () => {
+    const cur = get();
+    set({ tutorialDismissed: true });
+    saveMeta({ tutorialDismissed: true, unlockedAchievements: cur.unlockedAchievements });
+  },
 }));
 
 // ---- side-effect helpers ----
@@ -139,8 +174,9 @@ export function startGameLoop(): void {
   const TICK_MS = 100;
   tickHandle = setInterval(() => useGameStore.getState().bumpTick(TICK_MS), TICK_MS);
   saveHandle = setInterval(() => {
-    const s = useGameStore.getState().state;
-    saveGame(s);
+    const st = useGameStore.getState();
+    saveGame(st.state);
+    saveMeta({ tutorialDismissed: st.tutorialDismissed, unlockedAchievements: st.unlockedAchievements });
     useGameStore.setState({ lastSaveAt: Date.now() });
   }, 10000);
 }
@@ -155,4 +191,11 @@ export function stopGameLoop(): void {
 export async function loadIfPresent(): Promise<void> {
   const s = await loadGame();
   if (s) useGameStore.getState().hydrate(s);
+  const meta = await loadMeta();
+  if (meta) {
+    useGameStore.setState({
+      tutorialDismissed: !!meta.tutorialDismissed,
+      unlockedAchievements: meta.unlockedAchievements ?? [],
+    });
+  }
 }
